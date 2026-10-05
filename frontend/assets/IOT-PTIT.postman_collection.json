@@ -1,0 +1,112 @@
+{
+  "info": {
+    "_postman_id": "c956760a-bc76-4bb9-9e2c-iotptit2026",
+    "name": "IoT PTIT Monitoring System",
+    "description": "Collection kiểm thử Auth, Sensor Data, Action History và Device Control của dự án IoT PTIT.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:3000" },
+    { "key": "token", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"full_name\": \"Nguyễn Văn A\",\n  \"email\": \"new-user@example.com\",\n  \"username\": \"new_user\",\n  \"password\": \"123456\"\n}" },
+            "url": "{{baseUrl}}/api/auth/register"
+          }
+        },
+        {
+          "name": "Login",
+          "event": [{
+            "listen": "test",
+            "script": { "exec": ["const data = pm.response.json();", "if (data.token) pm.collectionVariables.set('token', data.token);"] }
+          }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"account\": \"mxt\",\n  \"password\": \"123456\"\n}" },
+            "url": "{{baseUrl}}/api/auth/login"
+          }
+        },
+        {
+          "name": "Current User",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }],
+            "url": "{{baseUrl}}/api/auth/me"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Sensor Data",
+      "item": [
+        {
+          "name": "Get Sensors - All",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }],
+            "url": "{{baseUrl}}/api/sensors?page=1&limit=10&field=all&search="
+          }
+        },
+        {
+          "name": "Get Temperature Sensors",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }],
+            "url": "{{baseUrl}}/api/sensors?page=1&limit=20&field=temperature&search="
+          }
+        }
+      ]
+    },
+    {
+      "name": "Action History",
+      "item": [
+        {
+          "name": "Get Combined History Filter",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }],
+            "url": "{{baseUrl}}/api/history?page=1&limit=10&device=1&status=SUCCESS&action=TURN_ON&field=time&search=2026"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Device Control",
+      "item": [
+        {
+          "name": "Turn On LED",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"device_id\": 1,\n  \"action\": \"bat\"\n}" },
+            "url": "{{baseUrl}}/api/device/control"
+          }
+        },
+        {
+          "name": "Turn Off LED",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"device_id\": 1,\n  \"action\": \"tat\"\n}" },
+            "url": "{{baseUrl}}/api/device/control"
+          }
+        }
+      ]
+    }
+  ]
+}

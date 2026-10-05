@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Hệ thống giám sát và điều khiển IoT PTIT">
+  <title>IoT PTIT Monitoring System</title>
+  <link rel="stylesheet" href="styles.css?v=20261001-6">
+</head>
+<body>
+  <section id="authView" class="auth-view">
+    <div class="auth-brand"><span class="brand-mark">I</span><div><strong>IoT PTIT</strong><small>Monitoring System</small></div></div>
+    <article class="auth-card panel" id="loginCard">
+      <p class="eyebrow">CHÀO MỪNG TRỞ LẠI</p><h1>Đăng nhập</h1><p class="auth-subtitle">Đăng nhập để truy cập hệ thống giám sát.</p>
+      <form id="loginForm" novalidate>
+        <label>Tên tài khoản hoặc Email<input name="account" autocomplete="username" required placeholder="Nhập tài khoản hoặc email"></label>
+        <label>Mật khẩu<input name="password" type="password" autocomplete="current-password" minlength="6" required placeholder="Nhập mật khẩu"></label>
+        <p class="form-error" id="loginError" role="alert"></p>
+        <button class="primary auth-submit" type="submit">Đăng nhập</button>
+      </form>
+      <p class="auth-switch">Chưa có tài khoản? <button type="button" data-auth-screen="register">Đăng ký</button></p>
+    </article>
+    <article class="auth-card panel" id="registerCard" hidden>
+      <p class="eyebrow">TẠO TÀI KHOẢN</p><h1>Đăng ký</h1><p class="auth-subtitle">Tạo tài khoản mới để sử dụng Dashboard.</p>
+      <form id="registerForm" novalidate>
+        <label>Họ và tên<input name="full_name" autocomplete="name" required placeholder="Nguyễn Văn A"></label>
+        <label>Email<input name="email" type="email" autocomplete="email" required placeholder="email@example.com"></label>
+        <label>Tên tài khoản<input name="username" autocomplete="username" minlength="3" required placeholder="Tên đăng nhập"></label>
+        <label>Mật khẩu<input name="password" type="password" autocomplete="new-password" minlength="6" required placeholder="Tối thiểu 6 ký tự"></label>
+        <label>Xác nhận mật khẩu<input name="confirm_password" type="password" autocomplete="new-password" minlength="6" required placeholder="Nhập lại mật khẩu"></label>
+        <p class="form-error" id="registerError" role="alert"></p>
+        <button class="primary auth-submit" type="submit">Đăng ký</button>
+      </form>
+      <p class="auth-switch">Đã có tài khoản? <button type="button" data-auth-screen="login">Đăng nhập</button></p>
+    </article>
+  </section>
+
+  <div class="app-shell" id="appShell" hidden>
+    <aside class="sidebar">
+      <a class="brand" href="#dashboard" aria-label="IoT PTIT">
+        <span class="brand-mark">I</span>
+        <span><strong>IoT PTIT</strong><small>Monitoring System</small></span>
+      </a>
+      <nav aria-label="Điều hướng chính">
+        <a href="#dashboard" data-route="dashboard"><span>⌂</span> Dashboard</a>
+        <a href="#sensors" data-route="sensors"><span>⌁</span> Data Sensor</a>
+        <a href="#history" data-route="history"><span>↺</span> Action History</a>
+        <a href="#profile" data-route="profile"><span>◎</span> Profile</a>
+      </nav>
+      <button id="logoutButton" class="logout-button" type="button"><span>⇥</span> Đăng xuất</button>
+      <div class="system-states">
+        <div class="server-state"><i id="serverDot"></i><span><b id="serverText">Đang kết nối</b><small>Backend server</small></span></div>
+        <div class="server-state esp32-sidebar-state"><i id="esp32Dot"></i><span><b id="esp32Status">OFFLINE</b><small id="connectionDetail">ESP32 · MQTT</small></span></div>
+      </div>
+    </aside>
+
+    <main>
+      <header class="topbar">
+        <div><h1 id="pageTitle">Dashboard</h1></div>
+        <div class="top-actions"><time id="clock"></time><span id="currentUserName"></span><a class="avatar-mini" href="#profile">MT</a></div>
+      </header>
+
+      <section id="dashboard" class="page dashboard-page dashboard-container" aria-labelledby="pageTitle">
+        <div class="metric-grid">
+          <article class="metric temperature"><div class="metric-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 14.76V5a4 4 0 0 0-8 0v9.76a6 6 0 1 0 8 0Z"/><path d="M10 9v7"/><circle cx="10" cy="18" r="1.8"/></svg></div><div class="metric-copy"><span>Nhiệt độ</span><strong id="temperatureValue">-- °C</strong><small id="temperatureAssessment" class="assessment neutral">• Đang đánh giá</small></div></article>
+          <article class="metric humidity"><div class="metric-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.7 6.4 8.6a7.4 7.4 0 1 0 11.2 0L12 2.7Z"/><path d="M8.5 14.2a3.7 3.7 0 0 0 3.7 3.7"/></svg></div><div class="metric-copy"><span>Độ ẩm</span><strong id="humidityValue">-- %</strong><small id="humidityAssessment" class="assessment neutral">• Đang đánh giá</small></div></article>
+          <article class="metric light"><div class="metric-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.42 1.42M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.42-1.41M17.66 6.34l1.41-1.41"/></svg></div><div class="metric-copy"><span>Ánh sáng</span><strong id="lightValue">-- Lux</strong><small id="lightAssessment" class="assessment neutral">• Đang đánh giá</small></div></article>
+        </div>
+        <div class="dashboard-grid">
+          <article class="panel chart-panel">
+            <div class="panel-heading"><div><h2>Dữ liệu thời gian thực</h2><p>20 lần đo gần nhất</p></div><div class="legend"><span class="temp-dot">Nhiệt độ</span><span class="hum-dot">Độ ẩm</span><span class="light-dot">Ánh sáng</span></div></div>
+            <div class="chart-wrap"><canvas id="sensorChart"></canvas><p id="chartEmpty" hidden>Chưa có dữ liệu</p></div>
+          </article>
+          <article class="panel device-panel">
+            <div class="panel-heading"><div><h2>Điều khiển thiết bị</h2><p id="deviceAlert">Đồng bộ với ESP32</p></div><span class="live-badge">LIVE</span></div>
+            <div id="deviceList" class="device-list"><div class="skeleton"></div><div class="skeleton"></div></div>
+          </article>
+        </div>
+      </section>
+
+      <section id="sensors" class="page table-page" hidden>
+        <article class="panel table-panel">
+          <form id="sensorFilters" class="compact-filter" role="search">
+            <select name="field" aria-label="Tiêu chí tìm kiếm dữ liệu cảm biến"><option value="all">Tất cả</option><option value="time">Thời gian</option><option value="temperature">Nhiệt độ</option><option value="humidity">Độ ẩm</option><option value="light">Ánh sáng</option></select>
+            <div class="search-field"><input name="search" type="search" maxlength="100" placeholder="Nhập giá trị tìm kiếm..." aria-label="Từ khóa tìm kiếm dữ liệu cảm biến" aria-describedby="sensorSearchError" aria-invalid="false"><p id="sensorSearchError" class="search-error" role="alert" aria-live="polite" hidden></p></div>
+            <button class="primary toolbar-button" type="submit">Tìm kiếm</button>
+            <button class="secondary toolbar-button" type="button" data-refresh="sensor"><span aria-hidden="true">↻</span> Tải lại</button>
+          </form>
+          <div class="table-scroll"><table><thead><tr><th>STT</th><th>Loại cảm biến</th><th>Giá trị</th><th>Thời gian</th></tr></thead><tbody id="sensorTable"></tbody></table></div>
+          <div id="sensorPagination" class="pagination"></div>
+        </article>
+      </section>
+
+      <section id="history" class="page table-page" hidden>
+        <article class="panel table-panel">
+          <form id="historyFilters" class="history-filter-bar" role="search">
+            <input name="field" type="hidden" value="time">
+            <select name="device" aria-label="Lọc theo thiết bị"><option value="">Tất cả thiết bị</option><option value="1">Đèn LED phòng học</option><option value="2">Quạt thông gió</option><option value="3">Điều hòa</option></select>
+            <select name="action" aria-label="Lọc theo hành động"><option value="">Tất cả hành động</option><option value="TURN_ON">Bật</option><option value="TURN_OFF">Tắt</option></select>
+            <select name="status" aria-label="Lọc theo trạng thái"><option value="">Tất cả trạng thái</option><option value="SUCCESS">Thành công</option><option value="FAIL">Thất bại</option></select>
+            <div class="search-field"><input name="search" type="search" maxlength="100" placeholder="VD: 14:15:08 30/9/26" aria-label="Tìm kiếm theo thời gian" aria-describedby="historySearchError" aria-invalid="false"><p id="historySearchError" class="search-error" role="alert" aria-live="polite" hidden></p></div>
+            <button class="primary toolbar-button" type="submit">Tìm kiếm</button>
+            <button class="secondary toolbar-button" type="button" data-refresh="history"><span aria-hidden="true">↻</span> Tải lại</button>
+          </form>
+          <div class="table-scroll"><table><thead><tr><th>STT</th><th>Người dùng</th><th>Thiết bị</th><th>Hành động</th><th>Trạng thái</th><th>Thời gian</th></tr></thead><tbody id="historyTable"></tbody></table></div>
+          <div id="historyPagination" class="pagination"></div>
+        </article>
+      </section>
+
+      <section id="profile" class="page profile-page" hidden>
+        <div class="profile-grid">
+          <article class="panel profile-owner">
+            <button class="edit-profile" id="editProfileButton" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/></svg><span>Sửa hồ sơ</span></button>
+            <div class="profile-avatar">XT</div><span class="status active">Đang hoạt động</span>
+            <h2 id="profileName">Mai Xuân Trường</h2><p class="student-role">Sinh viên An toàn thông tin</p>
+            <dl class="profile-details"><div><dt>🆔 Mã sinh viên</dt><dd>B23DCAT309</dd></div><div><dt>✉ Email</dt><dd id="profileEmail">Chưa cập nhật</dd></div><div><dt>☎ Số điện thoại</dt><dd id="profilePhone">Chưa cập nhật</dd></div><div><dt>📅 Ngày sinh</dt><dd id="profileDob">Chưa cập nhật</dd></div></dl>
+          </article>
+          <article class="panel links-card"><div class="panel-heading"><div><h2>Tài nguyên dự án</h2><p>Mã nguồn, thiết kế, API và đặc tả hệ thống</p></div></div><div class="project-links">
+            <a id="githubLink" href="#" class="link-pending resource-card" aria-disabled="true"><span class="resource-status pending">○ Chưa liên kết</span><span class="resource-icon github-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 0 0-3.16 19.49c.5.09.68-.22.68-.48v-1.87c-2.78.6-3.37-1.18-3.37-1.18-.45-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.61.07-.61 1 .07 1.53 1.03 1.53 1.03.9 1.53 2.34 1.09 2.91.83.09-.65.35-1.09.64-1.34-2.22-.25-4.55-1.11-4.55-4.94 0-1.09.39-1.98 1.03-2.68-.1-.25-.45-1.27.1-2.64 0 0 .84-.27 2.75 1.02A9.6 9.6 0 0 1 12 6.82a9.6 9.6 0 0 1 2.5.34c1.91-1.29 2.75-1.02 2.75-1.02.55 1.37.2 2.39.1 2.64.64.7 1.03 1.59 1.03 2.68 0 3.84-2.34 4.68-4.57 4.93.36.31.68.92.68 1.86V21c0 .27.18.58.69.48A10 10 0 0 0 12 2Z"/></svg></span><span class="resource-copy"><b>GitHub</b><small>Repository mã nguồn dự án</small></span><span class="resource-action">Mở tài nguyên</span></a>
+            <a id="figmaLink" href="#" class="link-pending resource-card" aria-disabled="true"><span class="resource-status pending">○ Chưa liên kết</span><span class="resource-icon figma-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 2h4v7H8a3.5 3.5 0 1 1 0-7Z"/><path d="M12 2h4a3.5 3.5 0 1 1 0 7h-4V2Z"/><path d="M8 9h4v7H8a3.5 3.5 0 1 1 0-7Z"/><circle cx="15.5" cy="12.5" r="3.5"/><path d="M8 16h4v3.5A3.5 3.5 0 1 1 8 16Z"/></svg></span><span class="resource-copy"><b>Figma</b><small>Thiết kế giao diện hệ thống</small></span><span class="resource-action">Mở tài nguyên</span></a>
+            <a id="postmanLink" class="resource-card" href="assets/IOT-PTIT.postman_collection.json" download><span class="resource-status linked">● Đã liên kết</span><span class="resource-icon postman-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m14.7 4.2 5.1 5.1-8.9 8.9-5.5 1.4 1.4-5.5 7.9-9.9Z"/><path d="m12.8 6.6 4.6 4.6M6.8 14.1l4.1 4.1M15.9 3l2.6-1 3.5 3.5-1 2.6"/><path d="m4.8 18.1-2.3 2.3 1.1 1.1 2.3-2.3"/></svg></span><span class="resource-copy"><b>Postman</b><small>Tài liệu API và collection test</small></span><span class="resource-action">Tải Collection</span></a>
+            <a id="srsLink" href="#" class="link-pending resource-card" aria-disabled="true"><span class="resource-status pending">○ Chưa liên kết</span><span class="resource-icon pdf-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6M8 13h8M8 17h6"/></svg></span><span class="resource-copy"><b>Báo cáo SRS Bài 1</b><small>Tài liệu đặc tả hệ thống</small></span><span class="resource-action">Xem / Tải PDF</span></a>
+          </div></article>
+        </div>
+      </section>
+    </main>
+  </div>
+  <div id="profileModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="profileModalTitle" hidden>
+    <article class="profile-modal panel">
+      <div class="modal-heading"><div><p class="eyebrow">PROFILE SETTINGS</p><h2 id="profileModalTitle">Sửa hồ sơ</h2></div><button class="modal-close" type="button" data-close-profile aria-label="Đóng">×</button></div>
+      <form id="profileEditForm">
+        <section class="modal-section">
+          <div class="modal-section-title"><span>01</span><div><h3>Thông tin cá nhân</h3><p>Cập nhật thông tin liên hệ và ảnh đại diện</p></div></div>
+          <div class="avatar-editor"><div id="avatarPreview" class="avatar-preview">XT</div><label class="avatar-upload">Thay ảnh<input id="avatarInput" name="avatar" type="file" accept="image/png,image/jpeg,image/webp"></label><small>PNG, JPG hoặc WebP, tối đa 650 KB</small></div>
+          <div class="form-grid">
+            <label>Họ và tên<input name="full_name" readonly value="Mai Xuân Trường"></label>
+            <label>Mã sinh viên<input name="student_id" readonly value="B23DCAT309"></label>
+            <label>Email<input name="email" type="email" required></label>
+            <label>Số điện thoại<input name="phone" inputmode="numeric" pattern="[0-9]{9,11}"></label>
+            <label>Ngày sinh<input name="date_of_birth" type="date"></label>
+          </div>
+        </section>
+        <section class="modal-section">
+          <div class="modal-section-title"><span>02</span><div><h3>Tài nguyên dự án</h3><p>Dán URL công khai của từng tài nguyên</p></div></div>
+          <div class="form-grid resource-fields">
+            <label>GitHub URL<input name="github_url" type="url" placeholder="https://github.com/..."></label>
+            <label>Figma URL<input name="figma_url" type="url" placeholder="https://figma.com/..."></label>
+            <label>Postman URL<input name="postman_url" type="url" placeholder="https://documenter.getpostman.com/..."></label>
+            <label>Báo cáo SRS URL<input name="srs_url" type="url" placeholder="https://drive.google.com/..."></label>
+          </div>
+        </section>
+        <p class="form-error" id="profileEditError" role="alert"></p>
+        <div class="modal-actions"><button class="secondary" type="button" data-close-profile>Hủy</button><button class="primary save-profile" type="submit"><span class="button-label">Lưu thay đổi</span><span class="button-loading" hidden><i></i> Đang lưu...</span></button></div>
+      </form>
+    </article>
+  </div>
+  <div id="toast" role="status" aria-live="polite"></div>
+  <script type="module" src="app.js?v=20261001-4"></script>
+</body>
+</html>

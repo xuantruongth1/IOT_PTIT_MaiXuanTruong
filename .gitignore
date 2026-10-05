@@ -1,0 +1,7 @@
+backend/node_modules/
+database/iot.db
+.env
+tmp/
+esp32_firmware/secrets.h
+BTL_IOT_Slides.html
+BTL_IOT_Slides_assets/

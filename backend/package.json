@@ -1,0 +1,18 @@
+{
+  "name": "iot-ptit-backend",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "IoT monitoring REST API, SQLite database and optional MQTT bridge",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "test": "node --test ../tests/api.test.js"
+  },
+  "engines": { "node": ">=22.5" },
+  "dependencies": {
+    "bcryptjs": "^3.0.2",
+    "ws": "^8.18.3"
+  },
+  "optionalDependencies": { "mqtt": "^5.14.1" }
+}
